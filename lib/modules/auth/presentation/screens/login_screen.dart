@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:teslo_shop/modules/auth/presentation/providers/providers.dart';
 import 'package:teslo_shop/modules/shared/shared.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -50,11 +52,13 @@ class LoginScreen extends StatelessWidget {
   }
 }
 
-class _LoginForm extends StatelessWidget {
+class _LoginForm extends ConsumerWidget {
   const _LoginForm();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final loginFormState = ref.watch(loginFormProvider);
+
     final textStyles = Theme.of(context).textTheme;
 
     return Padding(
@@ -67,14 +71,25 @@ class _LoginForm extends StatelessWidget {
 
           const SizedBox(height: 50),
 
-          const CustomTextFormField(
+          CustomTextFormField(
             label: 'Email',
             keyboardType: TextInputType.emailAddress,
+            onChanged: ref.read(loginFormProvider.notifier).onEmailChanged,
+            errorText: loginFormState.wasSubmitted
+                ? loginFormState.email.errorText
+                : null,
           ),
 
           const SizedBox(height: 30),
 
-          const CustomTextFormField(label: 'Password', obscureText: true),
+          CustomTextFormField(
+            label: 'Password',
+            obscureText: true,
+            onChanged: ref.read(loginFormProvider.notifier).onPasswordChanged,
+            errorText: loginFormState.wasSubmitted
+                ? loginFormState.password.errorText
+                : null,
+          ),
 
           const SizedBox(height: 30),
 
@@ -84,7 +99,7 @@ class _LoginForm extends StatelessWidget {
             child: CustomFilledButton(
               text: 'Sign in',
               buttonColor: Colors.black,
-              onPressed: () {},
+              onPressed: ref.read(loginFormProvider.notifier).onSubmit,
             ),
           ),
 
