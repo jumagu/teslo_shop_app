@@ -2,6 +2,9 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:formz/formz.dart';
 import 'package:teslo_shop/modules/shared/shared.dart';
 
+// ! This is the legacy way to create a State Notifier Provider
+// ? See: https://riverpod.dev/docs/migration/from_state_notifier
+
 final loginFormProvider =
     StateNotifierProvider.autoDispose<LoginFormNotifier, LoginFormState>((ref) {
       return LoginFormNotifier();
@@ -65,10 +68,16 @@ class LoginFormNotifier extends StateNotifier<LoginFormState> {
     );
   }
 
-  void onSubmit() {
+  Future<void> onSubmit([
+    Function(String email, String password)? callback,
+  ]) async {
     if (!state.isValid) {
       _markAllAsTouched();
       return;
+    }
+
+    if (callback != null) {
+      await callback(state.email.value, state.password.value);
     }
   }
 
