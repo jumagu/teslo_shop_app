@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:teslo_shop/modules/auth/domain/domain.dart';
 import 'package:teslo_shop/modules/auth/infrastructure/infrastructure.dart';
+import 'package:teslo_shop/modules/shared/shared.dart';
 
 enum AuthStatus { checking, authenticated, notAuthenticated }
 
@@ -28,8 +29,9 @@ class AuthState {
 
 class AuthNotifier extends Notifier<AuthState> {
   final AuthRepository authRepository;
+  final BaseLocalStorageService localStorage;
 
-  AuthNotifier({required this.authRepository});
+  AuthNotifier({required this.authRepository, required this.localStorage});
 
   @override
   AuthState build() => AuthState();
@@ -39,7 +41,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
     try {
       final user = await authRepository.login(email, password);
-      _setAutenticatedUser(user);
+      await _setAutenticatedUser(user);
     } on AuthError catch (e) {
       startLogout(e.message);
     } catch (e) {
@@ -48,6 +50,8 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<void> startLogout([String? errorMessage]) async {
+    await localStorage.removeItem('token');
+
     state = state.copyWith(
       user: null,
       authStatus: AuthStatus.notAuthenticated,
@@ -57,8 +61,9 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<void> startCheckAuthStatus(String token) async {}
 
-  void _setAutenticatedUser(User user) {
-    // TODO: save persistent token
+  Future<void> _setAutenticatedUser(User user) async {
+    await localStorage.setItem('token', user.token);
+
     state = state.copyWith(
       user: user,
       authStatus: AuthStatus.authenticated,
@@ -68,5 +73,8 @@ class AuthNotifier extends Notifier<AuthState> {
 }
 
 final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(() {
-  return AuthNotifier(authRepository: ApiAuthRepository());
+  return AuthNotifier(
+    authRepository: ApiAuthRepository(),
+    localStorage: SharedPreferencesService(),
+  );
 });
