@@ -76,9 +76,13 @@ class LoginFormNotifier extends StateNotifier<LoginFormState> {
       return;
     }
 
+    state = state.copyWith(isSubmitting: true);
+
     if (callback != null) {
       await callback(state.email.value, state.password.value);
     }
+
+    state = state.copyWith(isSubmitting: false);
   }
 
   void _markAllAsTouched() {

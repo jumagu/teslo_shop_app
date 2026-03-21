@@ -21,9 +21,9 @@ class AuthState {
     AuthStatus? authStatus,
     String? errorMessage,
   }) => AuthState(
-    user: user ?? this.user,
+    user: user,
     authStatus: authStatus ?? this.authStatus,
-    errorMessage: errorMessage ?? this.errorMessage,
+    errorMessage: errorMessage,
   );
 }
 
@@ -31,13 +31,15 @@ class AuthNotifier extends Notifier<AuthState> {
   final AuthRepository authRepository;
   final BaseLocalStorageService localStorage;
 
-  AuthNotifier({required this.authRepository, required this.localStorage});
+  AuthNotifier({required this.authRepository, required this.localStorage}) {
+    startCheckAuthStatus();
+  }
 
   @override
   AuthState build() => AuthState();
 
   Future<void> startLogin(String email, String password) async {
-    await Future.delayed(const Duration(microseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 1500));
 
     try {
       final user = await authRepository.login(email, password);
@@ -59,7 +61,22 @@ class AuthNotifier extends Notifier<AuthState> {
     );
   }
 
-  Future<void> startCheckAuthStatus(String token) async {}
+  Future<void> startCheckAuthStatus() async {
+    final token = await localStorage.getItem<String>('token');
+
+    if (token == null) return startLogout();
+
+    await Future.delayed(const Duration(milliseconds: 1000));
+
+    try {
+      final user = await authRepository.checkAuthStatus(token);
+      await _setAutenticatedUser(user);
+    } on AuthError catch (e) {
+      startLogout(e.message);
+    } catch (e) {
+      startLogout('Unhandled error.');
+    }
+  }
 
   Future<void> _setAutenticatedUser(User user) async {
     await localStorage.setItem('token', user.token);

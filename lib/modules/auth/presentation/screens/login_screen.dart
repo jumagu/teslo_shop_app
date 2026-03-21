@@ -121,7 +121,7 @@ class _LoginForm extends ConsumerWidget {
             child: CustomFilledButton(
               text: 'Sign in',
               buttonColor: Colors.black,
-              onPressed: onSubmit,
+              onPressed: loginFormState.isSubmitting ? null : onSubmit,
             ),
           ),
 

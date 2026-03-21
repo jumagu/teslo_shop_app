@@ -9,7 +9,28 @@ class ApiAuthDatasource extends AuthDatasource {
 
   @override
   Future<User> checkAuthStatus(String token) async {
-    throw UnimplementedError();
+    try {
+      final response = await _dio.get(
+        '/auth/check-status',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      final user = UserMapper.apiJsonUserToEntity(response.data);
+
+      return user;
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 401) {
+        throw AuthError('Your session has expired. Please log in again.');
+      }
+
+      if (error.type == DioExceptionType.connectionTimeout) {
+        throw AuthError('Network error.');
+      }
+
+      throw AuthError('Something went wrong. Please, try again.');
+    } catch (e) {
+      throw AuthError('Unknown error.');
+    }
   }
 
   @override
