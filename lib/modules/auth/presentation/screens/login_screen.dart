@@ -108,6 +108,10 @@ class _LoginForm extends ConsumerWidget {
             label: 'Password',
             obscureText: true,
             onChanged: ref.read(loginFormProvider.notifier).onPasswordChanged,
+            onFieldSubmitted: (_) {
+              if (loginFormState.isSubmitting) return;
+              onSubmit();
+            },
             errorText: loginFormState.wasSubmitted
                 ? loginFormState.password.errorText
                 : null,
