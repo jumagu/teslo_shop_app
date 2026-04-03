@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "flutter-riverpod-expert": {
+      "source": "juparave/dotfiles",
+      "sourceType": "github",
+      "computedHash": "1b81c426cb1e7d2a369d4e0a08f5eebf7b67a1b342a0d5ec52d641b8536bfdc6"
+    }
+  }
+}
