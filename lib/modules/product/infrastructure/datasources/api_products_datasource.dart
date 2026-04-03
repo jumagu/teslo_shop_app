@@ -23,15 +23,15 @@ class ApiProductsDatasource extends ProductsDatasource {
     int offset = 0,
   }) async {
     try {
-      final response = await _dio.get<List<Map<String, dynamic>>>(
+      final response = await _dio.get<List>(
         '/products?limit=$limit&offset=$offset',
       );
 
-      final products =
-          response.data?.map(ProductMapper.apiJsonProductToEntity).toList() ??
-          [];
+      if (response.data == null) return [];
 
-      return products;
+      return [
+        ...response.data!.map((p) => ProductMapper.apiJsonProductToEntity(p)),
+      ];
     } on DioException catch (error) {
       if (error.type == DioExceptionType.connectionTimeout) {
         throw ProductError('Network error.');
@@ -39,7 +39,7 @@ class ApiProductsDatasource extends ProductsDatasource {
 
       throw ProductError('Something went wrong. Please, try again.');
     } catch (e) {
-      throw ProductError('');
+      throw ProductError('Unknown error.');
     }
   }
 

@@ -6,7 +6,7 @@ class ProductMapper {
   static Product apiJsonProductToEntity(Map<String, dynamic> json) {
     final images = List<String>.from(
       json['images'].map(
-        (String img) => img.startsWith('http')
+        (img) => img.startsWith('http')
             ? img
             : '${Environment.apiUrl}/files/product/$img',
       ),

@@ -31,12 +31,13 @@ class AuthNotifier extends Notifier<AuthState> {
   final AuthRepository authRepository;
   final BaseLocalStorageService localStorage;
 
-  AuthNotifier({required this.authRepository, required this.localStorage}) {
-    startCheckAuthStatus();
-  }
+  AuthNotifier({required this.authRepository, required this.localStorage});
 
   @override
-  AuthState build() => AuthState();
+  AuthState build() {
+    Future.microtask(() => startCheckAuthStatus());
+    return AuthState();
+  }
 
   Future<void> startLogin(String email, String password) async {
     await Future.delayed(const Duration(milliseconds: 1500));

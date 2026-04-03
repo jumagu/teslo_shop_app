@@ -35,14 +35,9 @@ class ProductsState {
 class ProductsNotifier extends Notifier<ProductsState> {
   late final ProductsRepository productsRepository;
 
-  ProductsNotifier() {
-    loadNextPage();
-  }
-
   @override
   ProductsState build() {
     productsRepository = ref.watch(productsRepositoryProvider);
-
     return ProductsState();
   }
 
@@ -69,7 +64,7 @@ class ProductsNotifier extends Notifier<ProductsState> {
         products: [...state.products, ...products],
       );
     } catch (e) {
-      return;
+      state = state.copyWith(isLoading: false, isLastPage: true);
     }
   }
 }
