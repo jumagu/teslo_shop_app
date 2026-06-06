@@ -44,8 +44,26 @@ class ApiProductsDatasource extends ProductsDatasource {
   }
 
   @override
-  Future<Product> getProductById(String id) {
-    throw UnimplementedError();
+  Future<Product> getProductById(String id) async {
+    try {
+      final response = await _dio.get('/products/$id');
+
+      final product = ProductMapper.apiJsonProductToEntity(response.data);
+
+      return product;
+    } on DioException catch (error) {
+      if (error.type == DioExceptionType.connectionTimeout) {
+        throw ProductError('Network error.');
+      }
+
+      if (error.response!.statusCode == 404) {
+        throw ProductError('Product not found.');
+      }
+
+      throw ProductError('Something went wrong. Please, try again.');
+    } catch (e) {
+      throw ProductError('Unknown error.');
+    }
   }
 
   @override

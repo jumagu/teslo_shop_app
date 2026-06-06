@@ -1,22 +1,30 @@
 import 'package:flutter/material.dart';
 
 class CustomTextFormField extends StatelessWidget {
+  final String initialValue;
+  final int maxLines;
+  final bool obscureText;
+  final double fontSize;
+  final TextInputType keyboardType;
+  final FloatingLabelBehavior floatingLabelBehavior;
   final String? label;
   final String? hint;
   final String? errorText;
-  final bool obscureText;
-  final TextInputType? keyboardType;
   final void Function(String value)? onChanged;
   final void Function(String value)? onFieldSubmitted;
   final String? Function(String? value)? validator;
 
   const CustomTextFormField({
     super.key,
+    this.initialValue = '',
+    this.maxLines = 1,
+    this.obscureText = false,
+    this.fontSize = 20,
+    this.keyboardType = TextInputType.text,
+    this.floatingLabelBehavior = FloatingLabelBehavior.auto,
     this.label,
     this.hint,
     this.errorText,
-    this.obscureText = false,
-    this.keyboardType = TextInputType.text,
     this.onChanged,
     this.onFieldSubmitted,
     this.validator,
@@ -41,9 +49,11 @@ class CustomTextFormField extends StatelessWidget {
       onFieldSubmitted: onFieldSubmitted,
       onChanged: onChanged,
       validator: validator,
+      initialValue: initialValue,
+      maxLines: maxLines,
       obscureText: obscureText,
       keyboardType: keyboardType,
-      style: const TextStyle(fontSize: 20, color: Colors.black),
+      style: TextStyle(fontSize: fontSize, color: Colors.black),
       decoration: InputDecoration(
         filled: true,
         fillColor: errorText == null ? Colors.white : Colors.red.shade50,
@@ -56,6 +66,7 @@ class CustomTextFormField extends StatelessWidget {
         focusedBorder: border,
         errorBorder: border,
         focusedErrorBorder: border,
+        floatingLabelBehavior: floatingLabelBehavior,
         floatingLabelStyle: const TextStyle(
           color: Colors.black,
           fontWeight: FontWeight.bold,
