@@ -13,23 +13,26 @@ class ProductScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final productState = ref.watch(productNotifierProvider(productId));
+    final product = productState.product;
+
+    void onSubmit() {
+      if (product == null) return;
+
+      final formNotifier = ref.read(productFormNotifierProvider(product).notifier);
+      final productNotifier = ref.read(productNotifierProvider(productId).notifier);
+
+      formNotifier.onSubmit(productNotifier.saveProduct);
+    }
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Product'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.camera_alt_outlined),
-            onPressed: () {},
-          ),
-        ],
+        actions: [IconButton(icon: const Icon(Icons.camera_alt_outlined), onPressed: () {})],
       ),
-      body: productState.isLoading
-          ? const FullScreenLoader()
-          : _ProductView(productState.product!),
+      body: product == null ? const FullScreenLoader() : _ProductView(product),
       floatingActionButton: FloatingActionButton(
+        onPressed: onSubmit,
         child: Icon(Icons.save_as_outlined),
-        onPressed: () {},
       ),
     );
   }
@@ -48,10 +51,7 @@ class _ProductView extends ConsumerWidget {
       child: Column(
         spacing: 25,
         children: [
-          AspectRatio(
-            aspectRatio: 1,
-            child: _ImageGallery(images: productForm.images),
-          ),
+          AspectRatio(aspectRatio: 1, child: _ImageGallery(images: productForm.images)),
 
           _ProductInformation(product),
 
@@ -78,10 +78,7 @@ class _ProductInformation extends ConsumerWidget {
         spacing: 20,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            productForm.title.value,
-            style: textStyles.titleMedium?.copyWith(height: 1.2),
-          ),
+          Text(productForm.title.value, style: textStyles.titleMedium?.copyWith(height: 1.2)),
 
           Divider(),
 
@@ -103,9 +100,7 @@ class _ProductInformation extends ConsumerWidget {
                 hint: 'E.g. Awesome T-Shirt',
                 initialValue: productForm.title.value,
                 errorText: productForm.title.errorText,
-                onChanged: ref
-                    .read(productFormNotifierProvider(product).notifier)
-                    .onTitleChanged,
+                onChanged: ref.read(productFormNotifierProvider(product).notifier).onTitleChanged,
               ),
 
               ProductTextFormField(
@@ -113,17 +108,13 @@ class _ProductInformation extends ConsumerWidget {
                 hint: 'E.g. awesome_tshirt',
                 initialValue: productForm.slug.value,
                 errorText: productForm.slug.errorText,
-                onChanged: ref
-                    .read(productFormNotifierProvider(product).notifier)
-                    .onSlugChanged,
+                onChanged: ref.read(productFormNotifierProvider(product).notifier).onSlugChanged,
               ),
 
               ProductTextFormField(
                 label: 'Price',
                 hint: 'E.g. 4.99',
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 initialValue: productForm.price.value.toString(),
                 errorText: productForm.price.errorText,
                 onChanged: (value) => ref
@@ -148,9 +139,19 @@ class _ProductInformation extends ConsumerWidget {
                 ),
               ),
 
-              _GenderSelector(selectedGender: product.gender),
+              _GenderSelector(
+                selectedGender: productForm.gender,
+                onSelectionChanged: ref
+                    .read(productFormNotifierProvider(product).notifier)
+                    .onGenderChanged,
+              ),
 
-              _SizeSelector(selectedSizes: product.sizes),
+              _SizeSelector(
+                selectedSizes: productForm.sizes,
+                onSelectionChanged: ref
+                    .read(productFormNotifierProvider(product).notifier)
+                    .onSizesChanged,
+              ),
 
               ProductTextFormField(
                 label: 'Stock',
@@ -181,9 +182,7 @@ class _ProductInformation extends ConsumerWidget {
                 hint: 'E.g. shirt, summer, cotton',
                 initialValue: productForm.tags.value,
                 errorText: productForm.tags.errorText,
-                onChanged: ref
-                    .read(productFormNotifierProvider(product).notifier)
-                    .onTagsChanged,
+                onChanged: ref.read(productFormNotifierProvider(product).notifier).onTagsChanged,
               ),
             ],
           ),
@@ -196,17 +195,16 @@ class _ProductInformation extends ConsumerWidget {
 class _SizeSelector extends StatelessWidget {
   final List<String> selectedSizes;
   final List<String> sizes = const ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  final void Function(List<String> selectedSizes)? onSelectionChanged;
 
-  const _SizeSelector({required this.selectedSizes});
+  const _SizeSelector({required this.selectedSizes, this.onSelectionChanged});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       child: SegmentedButton(
-        style: const ButtonStyle(
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
+        style: const ButtonStyle(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
         showSelectedIcon: false,
         emptySelectionAllowed: true,
         segments: sizes.map((size) {
@@ -217,7 +215,7 @@ class _SizeSelector extends StatelessWidget {
         }).toList(),
         selected: Set.from(selectedSizes),
         onSelectionChanged: (newSelection) {
-          print(newSelection);
+          onSelectionChanged?.call(List.from(newSelection));
         },
         multiSelectionEnabled: true,
       ),
@@ -229,29 +227,28 @@ class _GenderSelector extends StatelessWidget {
   final String selectedGender;
   final List<String> genders = const ['Men', 'Women', 'Kid'];
   final List<IconData> genderIcons = const [Icons.man, Icons.woman, Icons.boy];
+  final void Function(String selectedGender)? onSelectionChanged;
 
-  const _GenderSelector({required this.selectedGender});
+  const _GenderSelector({required this.selectedGender, this.onSelectionChanged});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       child: SegmentedButton(
-        style: const ButtonStyle(
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
+        style: const ButtonStyle(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
         showSelectedIcon: false,
         multiSelectionEnabled: false,
-        segments: genders.map((size) {
+        segments: genders.map((gender) {
           return ButtonSegment(
-            icon: Icon(genderIcons[genders.indexOf(size)]),
-            value: size.toLowerCase(),
-            label: Text(size, style: const TextStyle(fontSize: 16)),
+            icon: Icon(genderIcons[genders.indexOf(gender)]),
+            value: gender.toLowerCase(),
+            label: Text(gender, style: const TextStyle(fontSize: 16)),
           );
         }).toList(),
         selected: {selectedGender},
         onSelectionChanged: (newSelection) {
-          print(newSelection);
+          onSelectionChanged?.call(newSelection.first);
         },
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:teslo_shop/modules/product/domain/domain.dart';
+import 'package:teslo_shop/modules/product/presentation/providers/products_provider.dart';
 import 'package:teslo_shop/modules/product/presentation/providers/products_repository_provider.dart';
 
 class ProductState {
@@ -49,6 +50,30 @@ class ProductNotifier extends Notifier<ProductState> {
       state = state.copyWith(isLoading: false, product: product);
     } catch (e) {
       state = state.copyWith(isLoading: false);
+    }
+  }
+
+  Future<void> saveProduct(Map<String, dynamic> productLike) async {
+    if (state.isLoading || state.isSaving) return;
+
+    state = state.copyWith(isSaving: true);
+
+    try {
+      final Product product;
+
+      if (state.product != null) {
+        product = await productsRepository.updateProduct(
+          productId,
+          productLike,
+        );
+      } else {
+        product = await productsRepository.createProduct(productLike);
+      }
+
+      state = state.copyWith(isSaving: false, product: product);
+      ref.read(productsNotifierProvider.notifier).updateOrInsert(product);
+    } catch (e) {
+      state = state.copyWith(isSaving: false);
     }
   }
 }

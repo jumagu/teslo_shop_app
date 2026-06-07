@@ -9,5 +9,8 @@ abstract class ProductsDatasource {
 
   Future<Product> createProduct(Map<String, dynamic> productLike);
 
-  Future<Product> updateProduct(Map<String, dynamic> productLike);
+  Future<Product> updateProduct(
+    String productId,
+    Map<String, dynamic> productLike,
+  );
 }

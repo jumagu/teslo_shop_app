@@ -67,7 +67,20 @@ class ProductsNotifier extends Notifier<ProductsState> {
       state = state.copyWith(isLoading: false, isLastPage: true);
     }
   }
+
+  void updateOrInsert(Product product) {
+    final exist = state.products.any((p) => p.id == product.id);
+
+    if (exist) {
+      final updatedProducts = state.products.map((p) => p.id == product.id ? product : p).toList();
+      state = state.copyWith(products: updatedProducts);
+      return;
+    }
+
+    state = state.copyWith(products: [product, ...state.products]);
+  }
 }
 
-final productsNotifierProvider =
-    NotifierProvider<ProductsNotifier, ProductsState>(ProductsNotifier.new);
+final productsNotifierProvider = NotifierProvider<ProductsNotifier, ProductsState>(
+  ProductsNotifier.new,
+);

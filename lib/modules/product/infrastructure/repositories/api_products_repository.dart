@@ -31,7 +31,10 @@ class ApiProductsRepository extends ProductsRepository {
   }
 
   @override
-  Future<Product> updateProduct(Map<String, dynamic> productLike) {
-    return productsDatasource.updateProduct(productLike);
+  Future<Product> updateProduct(
+    String productId,
+    Map<String, dynamic> productLike,
+  ) {
+    return productsDatasource.updateProduct(productId, productLike);
   }
 }

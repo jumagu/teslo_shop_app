@@ -3,6 +3,7 @@ import 'package:teslo_shop/config/constants/environment.dart';
 import 'package:teslo_shop/modules/auth/domain/domain.dart';
 import 'package:teslo_shop/modules/auth/infrastructure/errors/errors.dart';
 import 'package:teslo_shop/modules/auth/infrastructure/mappers/mappers.dart';
+import 'package:teslo_shop/modules/shared/infrastructure/infrastructure.dart';
 
 class ApiAuthDatasource extends AuthDatasource {
   final Dio _dio = Dio(BaseOptions(baseUrl: Environment.apiUrl));
@@ -18,18 +19,12 @@ class ApiAuthDatasource extends AuthDatasource {
       final user = UserMapper.apiJsonUserToEntity(response.data);
 
       return user;
-    } on DioException catch (error) {
-      if (error.response?.statusCode == 401) {
-        throw AuthError('Your session has expired. Please log in again.');
-      }
-
-      if (error.type == DioExceptionType.connectionTimeout) {
-        throw AuthError('Network error.');
-      }
-
-      throw AuthError('Something went wrong. Please, try again.');
     } catch (e) {
-      throw AuthError('Unknown error.');
+      handleDioError(
+        e,
+        AuthError.new,
+        statusMessages: {401: 'Your session has expired. Please log in again.'},
+      );
     }
   }
 
@@ -44,18 +39,12 @@ class ApiAuthDatasource extends AuthDatasource {
       final user = UserMapper.apiJsonUserToEntity(response.data);
 
       return user;
-    } on DioException catch (error) {
-      if (error.response?.statusCode == 401) {
-        throw AuthError('Invalid credentials.');
-      }
-
-      if (error.type == DioExceptionType.connectionTimeout) {
-        throw AuthError('Network error.');
-      }
-
-      throw AuthError('Something went wrong. Please, try again.');
     } catch (e) {
-      throw AuthError('Unknown error.');
+      handleDioError(
+        e,
+        AuthError.new,
+        statusMessages: {401: 'Invalid credentials.'},
+      );
     }
   }
 

@@ -4,6 +4,7 @@ import 'package:teslo_shop/modules/product/domain/datasources/datasources.dart';
 import 'package:teslo_shop/modules/product/domain/entities/entities.dart';
 import 'package:teslo_shop/modules/product/infrastructure/errors/errors.dart';
 import 'package:teslo_shop/modules/product/infrastructure/mappers/mappers.dart';
+import 'package:teslo_shop/modules/shared/infrastructure/infrastructure.dart';
 
 class ApiProductsDatasource extends ProductsDatasource {
   late final Dio _dio;
@@ -32,14 +33,8 @@ class ApiProductsDatasource extends ProductsDatasource {
       return [
         ...response.data!.map((p) => ProductMapper.apiJsonProductToEntity(p)),
       ];
-    } on DioException catch (error) {
-      if (error.type == DioExceptionType.connectionTimeout) {
-        throw ProductError('Network error.');
-      }
-
-      throw ProductError('Something went wrong. Please, try again.');
     } catch (e) {
-      throw ProductError('Unknown error.');
+      handleDioError(e, ProductError.new);
     }
   }
 
@@ -51,18 +46,12 @@ class ApiProductsDatasource extends ProductsDatasource {
       final product = ProductMapper.apiJsonProductToEntity(response.data);
 
       return product;
-    } on DioException catch (error) {
-      if (error.type == DioExceptionType.connectionTimeout) {
-        throw ProductError('Network error.');
-      }
-
-      if (error.response!.statusCode == 404) {
-        throw ProductError('Product not found.');
-      }
-
-      throw ProductError('Something went wrong. Please, try again.');
     } catch (e) {
-      throw ProductError('Unknown error.');
+      handleDioError(
+        e,
+        ProductError.new,
+        statusMessages: {404: 'Product not found.'},
+      );
     }
   }
 
@@ -72,12 +61,42 @@ class ApiProductsDatasource extends ProductsDatasource {
   }
 
   @override
-  Future<Product> createProduct(Map<String, dynamic> productLike) {
-    throw UnimplementedError();
+  Future<Product> createProduct(Map<String, dynamic> productLike) async {
+    try {
+      final response = await _dio.post('/products', data: productLike);
+
+      final product = ProductMapper.apiJsonProductToEntity(response.data);
+
+      return product;
+    } catch (e) {
+      handleDioError(
+        e,
+        ProductError.new,
+        statusMessages: {400: 'Invalid product data.'},
+      );
+    }
   }
 
   @override
-  Future<Product> updateProduct(Map<String, dynamic> productLike) {
-    throw UnimplementedError();
+  Future<Product> updateProduct(
+    String productId,
+    Map<String, dynamic> productLike,
+  ) async {
+    try {
+      final response = await _dio.patch(
+        '/products/$productId',
+        data: productLike,
+      );
+
+      final product = ProductMapper.apiJsonProductToEntity(response.data);
+
+      return product;
+    } catch (e) {
+      handleDioError(
+        e,
+        ProductError.new,
+        statusMessages: {400: 'Invalid product data.'},
+      );
+    }
   }
 }
