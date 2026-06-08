@@ -1,5 +1,5 @@
 class ProductError implements Exception {
-  final String? message;
+  final String message;
 
   ProductError(this.message);
 }

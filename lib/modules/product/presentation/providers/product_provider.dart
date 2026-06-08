@@ -1,31 +1,37 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:teslo_shop/modules/product/domain/domain.dart';
+import 'package:teslo_shop/modules/product/infrastructure/infrastructure.dart';
 import 'package:teslo_shop/modules/product/presentation/providers/products_provider.dart';
 import 'package:teslo_shop/modules/product/presentation/providers/products_repository_provider.dart';
+import 'package:teslo_shop/modules/shared/shared.dart';
 
 class ProductState {
   final String id;
-  final Product? product;
   final bool isLoading;
   final bool isSaving;
+  final SnackbarMessage? message;
+  final Product? product;
 
   ProductState({
     required this.id,
-    this.product,
     this.isLoading = false,
     this.isSaving = false,
+    this.message,
+    this.product,
   });
 
   ProductState copyWith({
     String? id,
-    Product? product,
     bool? isLoading,
     bool? isSaving,
+    SnackbarMessage? message,
+    Product? product,
   }) => ProductState(
     id: id ?? this.id,
-    product: product ?? this.product,
     isLoading: isLoading ?? this.isLoading,
     isSaving: isSaving ?? this.isSaving,
+    message: message ?? this.message,
+    product: product ?? this.product,
   );
 }
 
@@ -67,8 +73,16 @@ class ProductNotifier extends Notifier<ProductState> {
     try {
       final product = await productsRepository.getProductById(state.id);
       state = state.copyWith(isLoading: false, product: product);
+    } on ProductError catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        message: SnackbarMessage(e.message, MessageTone.error),
+      );
     } catch (e) {
-      state = state.copyWith(isLoading: false);
+      state = state.copyWith(
+        isLoading: false,
+        message: SnackbarMessage('Unhandled error.', MessageTone.error),
+      );
     }
   }
 
@@ -78,21 +92,34 @@ class ProductNotifier extends Notifier<ProductState> {
     state = state.copyWith(isSaving: true);
 
     try {
+      final String successMsg;
       final Product product;
 
       if (state.id != 'new') {
-        product = await productsRepository.updateProduct(
-          productId,
-          productLike,
-        );
+        successMsg = 'Product updated successfully.';
+        product = await productsRepository.updateProduct(state.id, productLike);
       } else {
+        successMsg = 'Product created successfully.';
         product = await productsRepository.createProduct(productLike);
       }
 
-      state = state.copyWith(isSaving: false, product: product);
+      state = state.copyWith(
+        id: product.id,
+        isSaving: false,
+        product: product,
+        message: SnackbarMessage(successMsg, MessageTone.success),
+      );
       ref.read(productsNotifierProvider.notifier).updateOrInsert(product);
+    } on ProductError catch (e) {
+      state = state.copyWith(
+        isSaving: false,
+        message: SnackbarMessage(e.message, MessageTone.error),
+      );
     } catch (e) {
-      state = state.copyWith(isSaving: false);
+      state = state.copyWith(
+        isSaving: false,
+        message: SnackbarMessage('Unhandled error.', MessageTone.error),
+      );
     }
   }
 }

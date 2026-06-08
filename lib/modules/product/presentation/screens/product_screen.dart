@@ -15,6 +15,17 @@ class ProductScreen extends ConsumerWidget {
     final productState = ref.watch(productNotifierProvider(productId));
     final product = productState.product;
 
+    ref.listen(productNotifierProvider(productId), (previous, next) {
+      final prevMessage = previous?.message;
+      final nextMessage = next.message;
+
+      if (prevMessage == nextMessage) return;
+
+      if (nextMessage == null) return;
+
+      showSnackbar(context, nextMessage);
+    });
+
     void onSubmit() {
       if (product == null) return;
 
@@ -29,7 +40,7 @@ class ProductScreen extends ConsumerWidget {
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         appBar: AppBar(
-          title: Text(productId == 'new' ? 'Add Product' : 'Edit Product'),
+          title: Text(product?.id == 'new' ? 'Add Product' : 'Edit Product'),
           actions: [IconButton(icon: const Icon(Icons.camera_alt_outlined), onPressed: () {})],
         ),
         body: product == null ? const FullScreenLoader() : _ProductView(product),
