@@ -7,7 +7,7 @@ import 'package:teslo_shop/modules/shared/shared.dart';
 // ? Custom Inputs
 
 class TitleInput extends TextInput {
-  const TitleInput.pure() : super.pure('', minLength: 3, maxLength: 40);
+  const TitleInput.pure([super.value = '']) : super.pure(minLength: 3, maxLength: 40);
   const TitleInput.dirty(super.value) : super.dirty(minLength: 3, maxLength: 40);
 }
 
@@ -16,22 +16,22 @@ class SlugInput extends TextInput {
   static final _pattern = RegExp(r'^[a-z0-9]+(?:[-_][a-z0-9]+)*$');
   static const _message = 'Only lowercase letters, numbers, single hyphens and underscores';
 
-  SlugInput.pure() : super.pure('', pattern: _pattern, patternMessage: _message);
+  SlugInput.pure([super.value = '']) : super.pure(pattern: _pattern, patternMessage: _message);
   SlugInput.dirty(super.value) : super.dirty(pattern: _pattern, patternMessage: _message);
 }
 
 class DescriptionInput extends TextInput {
-  const DescriptionInput.pure() : super.pure('', minLength: 20, maxLength: 450);
+  const DescriptionInput.pure([super.value = '']) : super.pure(minLength: 20, maxLength: 450);
   const DescriptionInput.dirty(super.value) : super.dirty(minLength: 20, maxLength: 450);
 }
 
 class PriceInput extends NumberInput<double> {
-  const PriceInput.pure() : super.pure(0, min: 0);
+  const PriceInput.pure([super.value = 0]) : super.pure(min: 0);
   const PriceInput.dirty(super.value) : super.dirty(min: 0);
 }
 
 class StockInput extends NumberInput<int> {
-  const StockInput.pure() : super.pure(0, min: 0, max: 10000);
+  const StockInput.pure([super.value = 0]) : super.pure(min: 0, max: 10000);
   const StockInput.dirty(super.value) : super.dirty(min: 0, max: 10000);
 }
 
@@ -39,7 +39,7 @@ class TagsInput extends TextInput {
   static final _pattern = RegExp(r'^[^\s,]+(\s*,\s*[^\s,]+)*$');
   static const _message = 'Enter a comma-separated list, e.g. shirt, summer, cotton';
 
-  TagsInput.pure() : super.pure('', pattern: _pattern, patternMessage: _message);
+  TagsInput.pure([super.value = '']) : super.pure(pattern: _pattern, patternMessage: _message);
   TagsInput.dirty(super.value) : super.dirty(pattern: _pattern, patternMessage: _message);
 }
 
@@ -113,14 +113,14 @@ class ProductFormNotifier extends Notifier<ProductFormState> {
 
   @override
   ProductFormState build() => ProductFormState(
-    title: TitleInput.dirty(product.title),
-    slug: SlugInput.dirty(product.slug),
-    description: DescriptionInput.dirty(product.description),
-    price: PriceInput.dirty(product.price),
-    stock: StockInput.dirty(product.stock),
+    title: TitleInput.pure(product.title),
+    slug: SlugInput.pure(product.slug),
+    description: DescriptionInput.pure(product.description),
+    price: PriceInput.pure(product.price),
+    stock: StockInput.pure(product.stock),
     sizes: product.sizes,
     gender: product.gender,
-    tags: TagsInput.dirty(product.tags.join(',')),
+    tags: TagsInput.pure(product.tags.join(', ')),
     images: product.images,
     id: product.id,
   );
@@ -176,7 +176,7 @@ class ProductFormNotifier extends Notifier<ProductFormState> {
         'stock': state.stock.value,
         'sizes': state.sizes,
         'gender': state.gender,
-        'tags': state.tags.value.split(','),
+        'tags': state.tags.value.split(',').map((t) => t.trim().toLowerCase()).toList(),
         'images': state.images
             .map((img) => img.replaceAll('${Environment.apiUrl}/files/product/', ''))
             .toList(),

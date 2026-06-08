@@ -12,7 +12,7 @@ class ProductState {
   ProductState({
     required this.id,
     this.product,
-    this.isLoading = true,
+    this.isLoading = false,
     this.isSaving = false,
   });
 
@@ -43,6 +43,25 @@ class ProductNotifier extends Notifier<ProductState> {
   }
 
   Future<void> loadProduct() async {
+    if (state.id == 'new') {
+      state = state.copyWith(
+        isLoading: false,
+        product: Product(
+          id: 'new',
+          title: '',
+          price: 0,
+          description: '',
+          slug: '',
+          stock: 0,
+          sizes: [],
+          gender: 'men',
+          tags: [],
+          images: [],
+        ),
+      );
+      return;
+    }
+
     state = state.copyWith(isLoading: true);
 
     try {
@@ -61,7 +80,7 @@ class ProductNotifier extends Notifier<ProductState> {
     try {
       final Product product;
 
-      if (state.product != null) {
+      if (state.id != 'new') {
         product = await productsRepository.updateProduct(
           productId,
           productLike,

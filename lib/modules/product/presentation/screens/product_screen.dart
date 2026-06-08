@@ -24,15 +24,19 @@ class ProductScreen extends ConsumerWidget {
       formNotifier.onSubmit(productNotifier.saveProduct);
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Product'),
-        actions: [IconButton(icon: const Icon(Icons.camera_alt_outlined), onPressed: () {})],
-      ),
-      body: product == null ? const FullScreenLoader() : _ProductView(product),
-      floatingActionButton: FloatingActionButton(
-        onPressed: onSubmit,
-        child: Icon(Icons.save_as_outlined),
+    return GestureDetector(
+      // onTap: () => FocusManager.instance.primaryFocus?.unfocus(), // ? Another way to remove the keyboard focus
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(productId == 'new' ? 'Add Product' : 'Edit Product'),
+          actions: [IconButton(icon: const Icon(Icons.camera_alt_outlined), onPressed: () {})],
+        ),
+        body: product == null ? const FullScreenLoader() : _ProductView(product),
+        floatingActionButton: FloatingActionButton(
+          onPressed: onSubmit,
+          child: Icon(Icons.save_as_outlined),
+        ),
       ),
     );
   }

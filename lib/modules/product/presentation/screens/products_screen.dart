@@ -26,7 +26,7 @@ class ProductsScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton.extended(
         label: const Text('New Product'),
         icon: const Icon(Icons.add),
-        onPressed: () {},
+        onPressed: () => context.push('/product/new'),
       ),
     );
   }

@@ -10,8 +10,8 @@ class Product {
   final List<String> sizes;
   final String gender;
   final List<String> tags;
-  final User user;
   final List<String> images;
+  final User? user;
 
   Product({
     required this.id,
@@ -23,7 +23,7 @@ class Product {
     required this.sizes,
     required this.gender,
     required this.tags,
-    required this.user,
     required this.images,
+    this.user,
   });
 }
