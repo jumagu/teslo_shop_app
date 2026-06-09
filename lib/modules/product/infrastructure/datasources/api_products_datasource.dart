@@ -63,6 +63,8 @@ class ApiProductsDatasource extends ProductsDatasource {
   @override
   Future<Product> createProduct(Map<String, dynamic> productLike) async {
     try {
+      productLike['images'] = await _uploadImages(productLike['images']);
+
       final response = await _dio.post('/products', data: productLike);
 
       final product = ProductMapper.apiJsonProductToEntity(response.data);
@@ -83,6 +85,8 @@ class ApiProductsDatasource extends ProductsDatasource {
     Map<String, dynamic> productLike,
   ) async {
     try {
+      productLike['images'] = await _uploadImages(productLike['images']);
+
       final response = await _dio.patch(
         '/products/$productId',
         data: productLike,
@@ -96,6 +100,36 @@ class ApiProductsDatasource extends ProductsDatasource {
         e,
         ProductError.new,
         statusMessages: {400: 'Invalid product data.'},
+      );
+    }
+  }
+
+  Future<List<String>> _uploadImages(List<String> images) async {
+    final imagesToUplaod = images.where((img) => img.contains('/')).toList();
+    final restImages = images.where((img) => !img.contains('/')).toList();
+
+    final uploadJob = imagesToUplaod.map(_uploadImage).toList();
+
+    final uploadedImages = await Future.wait(uploadJob);
+
+    return [...restImages, ...uploadedImages];
+  }
+
+  Future<String> _uploadImage(String filePath) async {
+    try {
+      final fileName = filePath.split('/').last;
+      final FormData data = FormData.fromMap({
+        'file': MultipartFile.fromFileSync(filePath, filename: fileName),
+      });
+
+      final response = await _dio.post('/files/product', data: data);
+
+      return response.data['image'];
+    } catch (e) {
+      handleDioError(
+        e,
+        ProductError.new,
+        statusMessages: {400: 'Image upload failed. Please try again.'},
       );
     }
   }

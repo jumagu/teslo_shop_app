@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:teslo_shop/modules/product/domain/domain.dart';
@@ -7,8 +9,9 @@ import 'package:teslo_shop/modules/shared/shared.dart';
 
 class ProductScreen extends ConsumerWidget {
   final String productId;
+  final BaseCameraGalleryService cameraGalleryService = ImagePickerService();
 
-  const ProductScreen({super.key, required this.productId});
+  ProductScreen({super.key, required this.productId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,13 +38,43 @@ class ProductScreen extends ConsumerWidget {
       formNotifier.onSubmit(productNotifier.saveProduct);
     }
 
+    void onAddGalleryImage() async {
+      if (product == null) return;
+
+      final imgPath = await cameraGalleryService.selectPhoto();
+
+      if (imgPath == null) return;
+
+      final formNotifier = ref.read(productFormNotifierProvider(product).notifier);
+
+      formNotifier.onImageAdded(imgPath);
+    }
+
+    void onAddCameraPhoto() async {
+      if (product == null) return;
+
+      final photoPath = await cameraGalleryService.takePhoto();
+
+      if (photoPath == null) return;
+
+      final formNotifier = ref.read(productFormNotifierProvider(product).notifier);
+
+      formNotifier.onImageAdded(photoPath);
+    }
+
     return GestureDetector(
       // onTap: () => FocusManager.instance.primaryFocus?.unfocus(), // ? Another way to remove the keyboard focus
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         appBar: AppBar(
           title: Text(product?.id == 'new' ? 'Add Product' : 'Edit Product'),
-          actions: [IconButton(icon: const Icon(Icons.camera_alt_outlined), onPressed: () {})],
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.photo_library_outlined),
+              onPressed: onAddGalleryImage,
+            ),
+            IconButton(icon: const Icon(Icons.camera_alt_outlined), onPressed: onAddCameraPhoto),
+          ],
         ),
         body: product == null ? const FullScreenLoader() : _ProductView(product),
         floatingActionButton: FloatingActionButton(
@@ -276,11 +309,28 @@ class _ImageGallery extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (images.isEmpty) {
+      return Image.asset('assets/images/no-image.jpg', fit: BoxFit.cover);
+    }
+
     return PageView(
       scrollDirection: Axis.horizontal,
-      children: images.isEmpty
-          ? [Image.asset('assets/images/no-image.jpg', fit: BoxFit.cover)]
-          : images.map((e) => Image.network(e, fit: BoxFit.cover)).toList(),
+      children: images.map((img) {
+        late ImageProvider imageProvider;
+
+        if (img.startsWith('http')) {
+          imageProvider = NetworkImage(img);
+        } else {
+          imageProvider = FileImage(File(img));
+        }
+
+        return FadeInImage(
+          image: imageProvider,
+          fit: BoxFit.cover,
+          fadeInCurve: Curves.easeOutExpo,
+          placeholder: const AssetImage('assets/loaders/bottle-loader.gif'),
+        );
+      }).toList(),
     );
   }
 }

@@ -44,7 +44,7 @@ class _ImageViewer extends StatelessWidget {
         child: FadeInImage(
           fit: BoxFit.cover,
           image: NetworkImage(images.first),
-          fadeInCurve: Curves.bounceOut,
+          fadeInCurve: Curves.easeOutExpo,
           fadeInDuration: Duration(milliseconds: 125),
           fadeOutDuration: Duration(milliseconds: 333),
           placeholder: const AssetImage('assets/loaders/bottle-loader.gif'),

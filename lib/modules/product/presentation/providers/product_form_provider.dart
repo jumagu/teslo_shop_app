@@ -157,6 +157,10 @@ class ProductFormNotifier extends Notifier<ProductFormState> {
     state = state.copyWith(gender: gender);
   }
 
+  void onImageAdded(String imagePath) {
+    state = state.copyWith(images: [...state.images, imagePath]);
+  }
+
   Future<void> onSubmit([Function(Map<String, dynamic> productLike)? callback]) async {
     if (!state.isValid) {
       _markAllAsTouched();
