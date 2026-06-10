@@ -78,8 +78,17 @@ class ProductScreen extends ConsumerWidget {
         ),
         body: product == null ? const FullScreenLoader() : _ProductView(product),
         floatingActionButton: FloatingActionButton(
-          onPressed: onSubmit,
-          child: Icon(Icons.save_as_outlined),
+          onPressed: productState.isSaving ? null : onSubmit,
+          child: productState.isSaving
+              ? SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    semanticsLabel: 'Saving changes...',
+                  ),
+                )
+              : Icon(Icons.save_as_outlined),
         ),
       ),
     );
