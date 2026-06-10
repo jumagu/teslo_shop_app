@@ -14,6 +14,8 @@ class SideMenu extends ConsumerStatefulWidget {
 
 class _SideMenuState extends ConsumerState<SideMenu> {
   int navDrawerIndex = 0;
+  static const double paddingX = 16;
+  static const double paddingY = 10;
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +25,7 @@ class _SideMenuState extends ConsumerState<SideMenu> {
     return NavigationDrawer(
       elevation: 1,
       selectedIndex: navDrawerIndex,
+      tilePadding: const EdgeInsets.symmetric(horizontal: paddingX),
       onDestinationSelected: (value) {
         setState(() {
           navDrawerIndex = value;
@@ -34,37 +37,63 @@ class _SideMenuState extends ConsumerState<SideMenu> {
       },
       children: [
         Padding(
-          padding: EdgeInsets.fromLTRB(20, hasNotch ? 0 : 20, 16, 0),
-          child: Text('Saludos', style: textStyles.titleMedium),
+          padding: EdgeInsets.fromLTRB(
+            paddingX,
+            hasNotch ? 0 : 16,
+            paddingX,
+            0,
+          ),
+          child: Text('Teslo Shop', style: textStyles.titleMedium),
         ),
 
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 16, 10),
-          child: Text('Tony Stark', style: textStyles.titleSmall),
-        ),
-
-        const NavigationDrawerDestination(
-          icon: Icon(Icons.home_outlined),
-          label: Text('Productos'),
+          padding: const EdgeInsets.symmetric(horizontal: paddingX),
+          child: Text(
+            'User: ${ref.watch(authNotifierProvider).user?.fullName.split(' ').first ?? ''}',
+            style: textStyles.bodyLarge,
+          ),
         ),
 
         const Padding(
-          padding: EdgeInsets.fromLTRB(28, 16, 28, 10),
+          padding: EdgeInsets.symmetric(
+            horizontal: paddingX,
+            vertical: paddingY,
+          ),
           child: Divider(),
         ),
 
+        const NavigationDrawerDestination(
+          icon: Icon(Icons.checkroom_outlined),
+          label: Text('Products'),
+        ),
+
+        const NavigationDrawerDestination(
+          enabled: false,
+          icon: Icon(Icons.inventory_2_outlined),
+          label: Text('Orders'),
+        ),
+
+        const NavigationDrawerDestination(
+          enabled: false,
+          icon: Icon(Icons.people_alt_outlined),
+          label: Text('Customers'),
+        ),
+
         const Padding(
-          padding: EdgeInsets.fromLTRB(28, 10, 16, 10),
-          child: Text('Otras opciones'),
+          padding: EdgeInsets.symmetric(
+            horizontal: paddingX,
+            vertical: paddingY,
+          ),
+          child: Divider(),
         ),
 
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: paddingX),
           child: CustomFilledButton(
+            text: 'Log Out',
             onPressed: () => {
               ref.read(authNotifierProvider.notifier).startLogout(),
             },
-            text: 'Cerrar sesión',
           ),
         ),
       ],
