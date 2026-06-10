@@ -81,6 +81,6 @@ class ProductsNotifier extends Notifier<ProductsState> {
   }
 }
 
-final productsNotifierProvider = NotifierProvider<ProductsNotifier, ProductsState>(
+final productsNotifierProvider = NotifierProvider.autoDispose<ProductsNotifier, ProductsState>(
   ProductsNotifier.new,
 );
