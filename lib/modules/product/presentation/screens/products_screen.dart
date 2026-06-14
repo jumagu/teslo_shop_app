@@ -72,6 +72,7 @@ class _ProductsViewState extends ConsumerState<_ProductsView> {
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: AlignedGridView.count(
         controller: scrollController,
+        padding: const EdgeInsets.only(bottom: 90),
         itemCount: productsState.products.length,
         crossAxisCount: 2,
         mainAxisSpacing: 10,
