@@ -6,6 +6,8 @@ The backend used by this app lives in a separate repository: [flutter-backend-te
 
 ## Demo
 
+- [Link to the YouTube video](https://youtu.be/a4zCkTCutIE)
+
 ## Features
 
 - **Authentication**: Email/password login with token-based sessions, an auth-status splash that decides the initial route, and route guards that protect product screens
